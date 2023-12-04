@@ -5,7 +5,24 @@ namespace Advent.Handlers
     public class AlphabetAndDigitReader : TrebuchetReader
     {
         private Regex firstWordyNumberRegex = new Regex("(?:zero|one|two|three|four|five|six|seven|eight|nine)|\\d");
-        private Regex lastWordyNumberRegex = new Regex("\\b(?:zero|one|two|three|four|five|six|seven|eight|nine)\\b(?=\\D*$)");
+        private Regex lastWordyNumberRegex = new Regex("(?:zero|one|two|three|four|five|six|seven|eight|nine)(?=\\D*$)");
+
+        public int GetCoordinates(string path)
+        {
+            int coordinates = 0;
+            foreach (var line in File.ReadLines(path))
+            {
+                coordinates += GetCoordinate(line, 2);
+            }
+            return coordinates;
+        }
+
+        public int GetCoordinate(string line, int numberOfNumbersToFind)
+        {
+            var first = ReadValues(line, true).First() * 10;
+            var second = ReadValues(line, false).First();
+            return first + second;
+        }
 
         public IEnumerable<int> ReadValues(string line, bool isFirst)
         {
@@ -13,7 +30,7 @@ namespace Advent.Handlers
             {
                 var match = isFirst ?
                     firstWordyNumberRegex.Match(line).Value :
-                    lastWordyNumberRegex.Match(line).Value;
+                    lastWordyNumberRegex.Matches(line).Last().Value;
                 yield return match switch
                 {
                     "zero" => 0,
