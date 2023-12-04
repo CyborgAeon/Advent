@@ -1,12 +1,13 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Advent.Handlers
 {
-    public class TrebuchetReader
-    {        
-        protected Regex firstDigitRegex = new Regex("\\d");
-        protected Regex lastDigitRegex = new Regex("\\d(?=\\D*$)");
-
+    public class OnlyDigitReader : TrebuchetReader
+    {
         public int GetCoordinates(string path)
         {
             int coordinates = 0;
@@ -28,12 +29,10 @@ namespace Advent.Handlers
             return coordinates.First() * 10 + coordinates.Last();
         }
 
-        protected IEnumerable<int> ReadValues(string line, bool numberOfNumbersToFind) => throw new NotImplementedException();
-        //private int SetTens(string line)
-        //{
-        //    //MapWordyNumber(line);
-        //    //int.Parse(firstDigit.Match(line).Value) * 10;
-        //}
-        //private int SetUnits(string line) => int.Parse(lastDigitRegex.Match(line).Value);
+        protected IEnumerable<int> ReadValues(string line, bool isFirst)
+        {
+            var match = isFirst ? firstDigitRegex.Match(line).Value : lastDigitRegex.Match(line).Value;
+            yield return int.Parse(match);
+        }
     }
 }
