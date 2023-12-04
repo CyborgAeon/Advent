@@ -49,8 +49,10 @@ namespace Advent.Handlers
         public int GetCoordinate(string line)
         {
             var first = ReadCharsInString(line, A.Numbers);
-            var second = ReadCharsInString(line,
-                A.Numbers.ToDictionary(k => $"{k.Key.Reverse()}", k => k.Value));
+            var second = ReadCharsInString(new string(line.Reverse().ToArray()),
+                A.Numbers.ToDictionary(
+                    k => new string(k.Key.Reverse().ToArray()), 
+                    k => k.Value));
 
             return int.Parse(first + second);
         }
