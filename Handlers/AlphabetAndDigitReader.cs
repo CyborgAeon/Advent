@@ -1,66 +1,58 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Advent.Handlers
 {
     public class AlphabetAndDigitReader : TrebuchetReader
     {
-        private Regex firstWordyNumberRegex = new Regex("(?:zero|one|two|three|four|five|six|seven|eight|nine)|\\d");
-        private Regex lastWordyNumberRegex = new Regex("(?:zero|one|two|three|four|five|six|seven|eight|nine)(?=\\D*$)");
-
         public int GetCoordinates(string path)
         {
             int coordinates = 0;
             foreach (var line in File.ReadLines(path))
             {
-                coordinates += GetCoordinate(line, 2);
+                coordinates += GetCoordinate(line);
             }
             return coordinates;
         }
 
-        public int GetCoordinate(string line, int numberOfNumbersToFind)
+        public string ReadCharsInString(string chars, Dictionary<string, int> numbers)
         {
-            var first = ReadValues(line, true).First() * 10;
-            var second = ReadValues(line, false).First();
-            return first + second;
-        }
-
-        public IEnumerable<int> ReadValues(string line, bool isFirst)
-        {
-            if (IsWordy(line, isFirst))
+            int characterIndex = 0;
+            int output = 0;
+            foreach (var cha in chars)
             {
-                var match = isFirst ?
-                    firstWordyNumberRegex.Match(line).Value :
-                    lastWordyNumberRegex.Matches(line).Last().Value;
-                yield return match switch
+                var sub = chars.AsSpan(characterIndex++);
+                foreach (var number in numbers)
                 {
-                    "zero" => 0,
-                    "one" => 1,
-                    "two" => 2,
-                    "three" => 3,
-                    "four" => 4,
-                    "five" => 5,
-                    "six" => 6,
-                    "seven" => 7,
-                    "eight" => 8,
-                    "nine" => 9
-                };
+                    if (sub.StartsWith(number.Key))
+                    {
+                        output = number.Value;
+                        return output.ToString();
+                    }
+                }
+
+                // character 48 is 0; character 57 is 9;
+                // This if statement does a lookup to check if the
+                // current character in question is a digit
+                // if it is, we assign that digit to output and return it.
+                // 48 - 48 = 0; 49 - 48 = 1; 50 - 48 = 2...
+                if ((int)cha >= 48 && (int)cha <= 57)
+                {
+                    output = ((int)cha) - 48;
+                    break;
+                }
             }
-            else
-            {
-                var match = isFirst ? firstDigitRegex.Match(line).Value : lastDigitRegex.Match(line).Value;
-                yield return int.Parse(match);
-            }
+            return output.ToString();
         }
 
-        private bool IsWordy(string line, bool isFirst)
+        public int GetCoordinate(string line)
         {
-            var wordRegex = isFirst ? firstWordyNumberRegex : lastWordyNumberRegex;
-            var numberRegex = isFirst ? firstDigitRegex : lastDigitRegex;
+            var first = ReadCharsInString(line, A.Numbers);
+            var second = ReadCharsInString(line,
+                A.Numbers.ToDictionary(k => $"{k.Key.Reverse()}", k => k.Value));
 
-            var wordIndex = wordRegex.Match(line).Index;
-            var numberIndex = numberRegex.Match(line).Index;
-
-            return isFirst ? wordIndex < numberIndex : wordIndex > numberIndex;
+            return int.Parse(first + second);
         }
     }
 }
